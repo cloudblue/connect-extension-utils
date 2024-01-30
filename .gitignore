@@ -1,0 +1,8 @@
+*.pyc
+htmlcov
+.coverage
+coverage.xml
+node_modules
+ui/tests/coverage
+.env
+.vscode
