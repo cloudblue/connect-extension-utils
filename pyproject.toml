@@ -49,7 +49,14 @@ addopts = "--cov=connect_extension_utils --cov-report=term-missing:skip-covered 
 branch = true
 
 [tool.coverage.report]
-omit = []
+omit = [
+    "*/migrations/*",
+    "*/config/*",
+    "*/settings/*",
+    "*/manage.py",
+    "*/wsgi.py",
+    "*/urls.py",
+]
 
 exclude_lines = [
     "pragma: no cover",
@@ -76,7 +83,7 @@ exclude = [
 show_source = true
 max_line_length = 100
 max_cognitive_complexity = 15
-ignore = ["FI1", "W503", "B008", "I100"]
+ignore = ["FI1", "W503", "B008", "I100", "I201"]
 
 
 [tool.isort]
