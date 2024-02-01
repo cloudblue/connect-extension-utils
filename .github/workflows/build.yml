@@ -52,6 +52,9 @@ jobs:
       - name: Generate coverage report
         run: |
           poetry run pytest
+      - name: Fix coverage.xml for Sonar
+        run: |
+          sed -i 's/\/home\/runner\/work\/connect-extension-utils\/connect-extension-utils\//\/github\/workspace\//g' coverage.xml
       - name: SonarCloud
         uses: SonarSource/sonarcloud-github-action@master
         env:
