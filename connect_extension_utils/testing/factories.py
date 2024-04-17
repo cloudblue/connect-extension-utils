@@ -38,32 +38,32 @@ class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     @classmethod
     def _save(cls, model_class, session, args, kwargs):
-        obj = model_class(*args, **kwargs)
+        save_method = None
         if cls._meta._is_transactional:
+            obj = model_class(*args, **kwargs)
             kwargs['id'] = cls.add_next_with_verbose(
                 model_class,
                 session,
                 obj,
                 cls._meta._related_id_field,
             )
-        return super()._save(model_class, session, args, kwargs)
+            save_method = factory.alchemy.SQLAlchemyModelFactory.__dict__['_save']
+        cls.save_method = save_method or super()._save
+        return cls.save_method(model_class, session, args, kwargs)
 
     @classmethod
     def add_next_with_verbose(cls, model_class, session, obj, related_id_field):
         new_suffix = 0
         related_id_value = getattr(obj, related_id_field)
+        base_qs = session.query(model_class).filter(
+            model_class.__dict__[related_id_field] == related_id_value,
+        )
         if session.query(
-            session.query(model_class)
-            .filter(model_class.__dict__[related_id_field] == related_id_value)
-            .exists(),
+            base_qs.exists(),
         ).scalar():
-            last_obj = (
-                session.query(model_class)
-                .order_by(
-                    model_class.id.desc(),
-                )
-                .first()
-            )
+            last_obj = base_qs.order_by(
+                model_class.id.desc(),
+            ).first()
             _instance_id, suffix = last_obj.id.rsplit("-", 1)
             new_suffix = int(suffix) + 1
         else:

@@ -39,11 +39,10 @@ def test_add_verbose_bulk(dbsession):
 
 
 def test_add_with_next_verbose(dbsession):
-    obj = MyModel(
-        name='Foo',
-        created_by='Jony',
-    )
+    obj = MyModel(name='Foo', created_by='Jony')
+    obj_2 = MyModel(name='Bar', created_by='Neri')
     dbsession.add_with_verbose(obj)
+    dbsession.add_with_verbose(obj_2)
     dbsession.commit()
     trx_obj = TransactionalModel(
         my_model_id=obj.id,
@@ -55,10 +54,20 @@ def test_add_with_next_verbose(dbsession):
     )
     dbsession.add_next_with_verbose(trx_obj_2, related_id_field='my_model_id')
     dbsession.commit()
+    trx_obj_3 = TransactionalModel(
+        my_model_id=obj_2.id,
+    )
+    dbsession.add_next_with_verbose(trx_obj_3, related_id_field='my_model_id')
+    dbsession.commit()
     assert trx_obj.id.startswith(TransactionalModel.PREFIX)
     assert trx_obj.id.endswith('000')
+    assert obj.id.split('-', 1)[-1] in trx_obj.id
     assert trx_obj_2.id.startswith(TransactionalModel.PREFIX)
     assert trx_obj_2.id.endswith('001')
+    assert obj.id.split('-', 1)[-1] in trx_obj_2.id
+    assert trx_obj_3.id.startswith(TransactionalModel.PREFIX)
+    assert trx_obj_3.id.endswith('000')
+    assert obj_2.id.split('-', 1)[-1] in trx_obj_3.id
 
 
 def test_add_with_next_verbose_bulk(dbsession):
@@ -66,13 +75,22 @@ def test_add_with_next_verbose_bulk(dbsession):
         name='Foo',
         created_by='Jony',
     )
-    dbsession.add_with_verbose(m_obj)
+    m_obj2 = MyModel(name='Bar', created_by='Neri')
+    dbsession.add_all_with_verbose([m_obj, m_obj2])
     dbsession.commit()
+
+    trx_1 = TransactionalModel(my_model_id=m_obj.id)
+    dbsession.add_next_with_verbose(
+        trx_1,
+        related_id_field='my_model_id',
+    )
+    dbsession.commit()
+
     instances = []
     for _ in range(3):
         instances.append(
             TransactionalModel(
-                my_model_id=m_obj.id,
+                my_model_id=m_obj2.id,
             ),
         )
     dbsession.add_all_with_next_verbose(instances, related_id_field='my_model_id')
@@ -80,12 +98,14 @@ def test_add_with_next_verbose_bulk(dbsession):
     for idx, obj in enumerate(instances):
         assert obj.id.startswith(TransactionalModel.PREFIX)
         assert obj.id.endswith(f'00{idx}')
+        assert m_obj2.id.split('-', 1)[-1] in obj.id
 
-    new_obj = TransactionalModel(my_model_id=m_obj.id)
-    dbsession.add_all_with_next_verbose([new_obj], related_id_field='my_model_id')
+    new_trx_obj = TransactionalModel(my_model_id=m_obj.id)
+    dbsession.add_all_with_next_verbose([new_trx_obj], related_id_field='my_model_id')
     dbsession.commit()
-    assert new_obj.id.startswith(TransactionalModel.PREFIX)
-    assert new_obj.id.endswith('003')
+    assert new_trx_obj.id.startswith(TransactionalModel.PREFIX)
+    assert new_trx_obj.id.endswith('001')
+    assert m_obj.id.split('-', 1)[-1] in new_trx_obj.id
 
 
 def test_add_with_verbose_bulk_fail_instances_not_same_class(dbsession):
