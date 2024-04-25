@@ -95,18 +95,12 @@ class VerboseBaseSession(Session):
         instance_class = instance.__class__
         new_suffix = 0
         related_id_value = getattr(instance, related_id_field)
-        if self.query(
-            self.query(instance_class)
-            .filter(instance_class.__dict__[related_id_field] == related_id_value)
-            .exists(),
-        ).scalar():
-            last_obj = (
-                self.query(instance_class)
-                .order_by(
-                    instance_class.id.desc(),
-                )
-                .first()
-            )
+        last_obj = self._get_last_obj_for_next_verbose(
+            instance_class,
+            related_id_field,
+            related_id_value,
+        )
+        if last_obj:
             _instance_id, suffix = last_obj.id.rsplit("-", 1)
             new_suffix = int(suffix) + 1
         else:
@@ -121,19 +115,12 @@ class VerboseBaseSession(Session):
         instance_class = first_item.__class__
         new_suffix = 0
         related_id_value = getattr(first_item, related_id_field)
-
-        if self.query(
-            self.query(instance_class)
-            .filter(instance_class.__dict__[related_id_field] == related_id_value)
-            .exists(),
-        ).scalar():
-            last_obj = (
-                self.query(instance_class)
-                .order_by(
-                    instance_class.id.desc(),
-                )
-                .first()
-            )
+        last_obj = self._get_last_obj_for_next_verbose(
+            instance_class,
+            related_id_field,
+            related_id_value,
+        )
+        if last_obj:
             _instance_id, suffix = last_obj.id.rsplit("-", 1)
             new_suffix = int(suffix) + 1
         else:
@@ -145,6 +132,17 @@ class VerboseBaseSession(Session):
             new_suffix += 1
 
         return self.add_all(instances)
+
+    def _get_last_obj_for_next_verbose(self, model_class, related_id_field, related_id_value):
+        base_qs = self.query(model_class).filter(
+            model_class.__dict__[related_id_field] == related_id_value,
+        )
+        last_obj = None
+        if self.query(base_qs.exists()).scalar():
+            last_obj = base_qs.order_by(
+                model_class.id.desc(),
+            ).first()
+        return last_obj
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, class_=VerboseBaseSession)

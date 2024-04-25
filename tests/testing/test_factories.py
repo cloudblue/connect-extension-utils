@@ -4,10 +4,12 @@ def test_model_factory(my_model_factory):
     assert obj.name.startswith("My Model")
 
 
-def test_related_model_factory(my_model_factory, related_model_factory):
+def test_related_model_factory(my_model_factory, related_model_factory, dbsession):
     rel_obj = related_model_factory()
     assert rel_obj.id.startswith(related_model_factory._meta.model.PREFIX)
     assert rel_obj.my_model_id.startswith(my_model_factory._meta.model.PREFIX)
+    assert dbsession.query(related_model_factory._meta.model).count() == 1
+    assert dbsession.query(my_model_factory._meta.model).count() == 1
 
 
 def test_transactional_model_factory(
@@ -24,3 +26,5 @@ def test_transactional_model_factory(
         _, body = base.split("-", 1)
         assert trx_obj.my_model_id == f"{my_model_factory._meta.model.PREFIX}-{body}"
         assert id_suffix == f"00{suffix}"
+    assert dbsession.query(my_model_factory._meta.model).count() == 1
+    assert dbsession.query(transactional_model_factory._meta.model).count() == 3
