@@ -74,7 +74,7 @@ class ExtensionErrorBase(metaclass=ExtensionErrorMeta):
         ERRORS = {
             1: "Some error",
             2: "Some {template} error.",
-            3: "Not found",
+            3: "Not valid.",
 
         }
 
