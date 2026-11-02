@@ -3,7 +3,6 @@ from typing import Dict, Optional, Union
 
 from pydantic import BaseModel, root_validator
 
-
 _By = Optional[Union[str, Dict[str, str]]]
 Events = Dict[str, Dict[str, Union[datetime, _By]]]
 
