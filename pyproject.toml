@@ -34,6 +34,8 @@ flake8-broken-line = ">=0.3,<0.7"
 flake8-pyproject = "^1.2.3"
 isort = "^5.10"
 pytest-factoryboy = "^2.6.0"
+# flake8-commas 2.1 imports pkg_resources, which setuptools stopped shipping in 82.
+setuptools = "<82"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
