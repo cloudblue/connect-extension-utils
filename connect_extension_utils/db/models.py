@@ -11,7 +11,6 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from connect.eaas.core.inject.common import get_config
 
-
 _MAX_RETRIES = 1000
 _ENGINE = None
 

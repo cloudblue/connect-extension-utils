@@ -4,7 +4,6 @@ from fastapi import status
 
 from connect.client import ClientError
 
-
 '''
 Error utilities for EaaS extensions.
 

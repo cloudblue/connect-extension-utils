@@ -3,7 +3,6 @@ from fastapi_pagination import LimitOffsetPage, LimitOffsetParams, set_page
 from fastapi_pagination.api import resolve_params
 from fastapi_pagination.ext.sqlalchemy import paginate
 
-
 set_page(LimitOffsetPage)
 
 
